@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Slooze Backend Challenge - Role-Based Food Ordering API
 
-## Getting Started
+A GraphQL backend built with Next.js, Apollo Server, and Prisma, featuring robust Role-Based Access Control (RBAC) and Region-Based Access Control (Re-BAC).
 
-First, run the development server:
+## Tech Stack
+- **Framework:** Next.js (App Router)
+- **API:** GraphQL (Apollo Server)
+- **ORM:** Prisma
+- **Database:** PostgreSQL (Neon DB)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Local Setup Instructions
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Clone the repository and install dependencies:**
+   \`\`\`bash
+   npm install
+   \`\`\`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. **Configure the Environment:**
+   Create a \`.env\` file in the root directory and add your PostgreSQL connection string:
+   \`\`\`env
+   DATABASE_URL="postgresql://user:password@your-neon-hostname/dbname?sslmode=require"
+   \`\`\`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Initialize the Database:**
+   Push the Prisma schema to your database to create the required tables:
+   \`\`\`bash
+   npx prisma db push
+   \`\`\`
 
-## Learn More
+4. **Seed the Database (Required for Testing):**
+   Run the seed script to populate the database with the Marvel characters (Nick Fury, Captain Marvel, etc.) and mock restaurants as per the assignment requirements:
+   \`\`\`bash
+   npm install -D tsx
+   npx tsx prisma/seed.ts
+   \`\`\`
 
-To learn more about Next.js, take a look at the following resources:
+5. **Run the Development Server:**
+   \`\`\`bash
+   npm run dev
+   \`\`\`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Testing the API
+Navigate to \`http://localhost:3000/api/graphql\` in your browser to access the Apollo Sandbox. 
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Authentication / RBAC Testing:**
+Currently, the GraphQL context hardcodes the user identity to facilitate easy testing of different roles without requiring a full JWT login flow. 
+To test different permission levels (RBAC) and region locks (Re-BAC), modify the \`user\` object in \`app/api/graphql/route.ts\`:
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+\`\`\`typescript
+const user = {
+  id: 'manager-marvel', // Matches seed data
+  role: 'MANAGER',      // Change to ADMIN or MEMBER to test RBAC
+  country: 'INDIA',     // Change to AMERICA to test Re-BAC
+};
+\`\`\`
