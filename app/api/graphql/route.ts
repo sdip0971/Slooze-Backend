@@ -15,7 +15,7 @@ const handler = startServerAndCreateNextHandler<NextRequest>(server, {
   context: async (req) => {
 
     const user = {
-      id: "manager-marvel-123",
+      id: "admin-fury",
       role: "MANAGER",
       country: "INDIA",
     };

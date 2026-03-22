@@ -12,7 +12,6 @@ async function main() {
 
   console.log("Seeding Users...");
 
-
   await prisma.user.create({
     data: {
       id: "admin-fury",
@@ -112,7 +111,88 @@ async function main() {
   console.log("Seeding complete!");
 }
 
-main()
+async function seedPaymentMethods() {
+  await prisma.paymentMethod.createMany({
+    data: [
+      {
+        userId: "admin-fury",
+        type: "CREDIT_CARD",
+        cardLast4: "4242",
+        cardBrand: "Visa",
+        isDefault: true,
+      },
+      {
+        userId: "admin-fury",
+        type: "UPI",
+        cardLast4: null,
+        cardBrand: null,
+        isDefault: false,
+      },
+    ],
+  });
+
+  await prisma.paymentMethod.create({
+    data: {
+      userId: "manager-marvel",
+      type: "CREDIT_CARD",
+      cardLast4: "5555",
+      cardBrand: "Mastercard",
+      isDefault: true,
+    },
+  });
+
+  // Captain America (Manager - America)
+  await prisma.paymentMethod.create({
+    data: {
+      userId: "manager-cap",
+      type: "DEBIT_CARD",
+      cardLast4: "8888",
+      cardBrand: "Visa",
+      isDefault: true,
+    },
+  });
+
+  // Thanos (Member - India)
+  await prisma.paymentMethod.create({
+    data: {
+      userId: "member-thanos",
+      type: "UPI",
+      cardLast4: null,
+      cardBrand: null,
+      isDefault: true,
+    },
+  });
+
+  // Thor (Member - India)
+  await prisma.paymentMethod.create({
+    data: {
+      userId: "member-thor",
+      type: "WALLET",
+      cardLast4: null,
+      cardBrand: null,
+      isDefault: true,
+    },
+  });
+
+  // Travis (Member - America)
+  await prisma.paymentMethod.create({
+    data: {
+      userId: "member-travis",
+      type: "CREDIT_CARD",
+      cardLast4: "1111",
+      cardBrand: "Amex",
+      isDefault: true,
+    },
+  });
+}
+
+async function runSeed() {
+  await main();
+  await seedPaymentMethods();
+  console.log("All seeding complete!");
+}
+
+runSeed()
   .catch((e) => {
     console.error(e);
     process.exit(1);

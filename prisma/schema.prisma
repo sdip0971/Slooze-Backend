@@ -21,6 +21,7 @@ enum Country {
   INDIA
   AMERICA
 }
+
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
@@ -32,6 +33,8 @@ model User {
   orders        Order[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  paymentMethods PaymentMethod[]
 }
 
 model Restaurant {
@@ -71,4 +74,24 @@ model OrderItem {
   menuItemId String
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
   quantity   Int
+}
+model PaymentMethod {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            PaymentType
+  cardLast4       String?
+  cardBrand       String?
+  isDefault       Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  DEBIT_CARD
+  UPI
+  WALLET
 }

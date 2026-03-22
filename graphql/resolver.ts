@@ -12,7 +12,19 @@ export const resolver = {
         },
       });
     },
+      paymentMethods: async (_parent: any, { userId }: any, context: any) => {
+      const { user, prisma } = context;
+      if (user.role !== "ADMIN" && user.id !== userId) {
+        throw new GraphQLError("You can only view your own payment methods");
+      }
+ 
+      return await prisma.paymentMethod.findMany({
+        where: { userId },
+        orderBy: { isDefault: 'desc' }
+      });
+    },
   },
+  
 
   Mutation: {
     createOrder: async (
@@ -99,9 +111,9 @@ export const resolver = {
         data: { status: "CANCELLED" },
       });
     },
+
     placeOrder: async (_parent: any, { orderId }: any, context: any) => {
       const { user, prisma } = context;
-
 
       if (user.role === "MEMBER") {
         throw new GraphQLError(
@@ -121,6 +133,106 @@ export const resolver = {
         data: { status: "COMPLETED" },
       });
     },
+    addPaymentMethod: async (
+      _parent: any,
+      { userId, input }: any,
+      context: any,
+    ) => {
+      const { user, prisma } = context;
+
+      if (user.role !== "ADMIN") {
+        throw new GraphQLError("Only administrators can add payment methods");
+      }
+
+      if (input.isDefault) {
+        await prisma.paymentMethod.updateMany({
+          where: { userId, isDefault: true },
+          data: { isDefault: false },
+        });
+      }
+
+      return prisma.paymentMethod.create({
+        data: {
+          userId,
+          type: input.type,
+          cardLast4: input.cardLast4,
+          cardBrand: input.cardBrand,
+          isDefault: input.isDefault ?? false,
+        },
+      });
     },
-  }
+    updatePaymentMethod: async (
+      _parent: any,
+      { paymentMethodId, input }: any,
+      context: any,
+    ) => {
+      const { user, prisma } = context;
+
+    
+      if (user.role !== "ADMIN") {
+        throw new GraphQLError(
+          "Only administrators can update payment methods",
+        );
+      }
+
+      const paymentMethod = await prisma.paymentMethod.findUnique({
+        where: { id: paymentMethodId },
+      });
+
+      if (!paymentMethod) {
+        throw new GraphQLError("Payment method not found");
+      }
+
+   
+      if (input.isDefault) {
+        await prisma.paymentMethod.updateMany({
+          where: {
+            userId: paymentMethod.userId,
+            isDefault: true,
+            NOT: { id: paymentMethodId },
+          },
+          data: { isDefault: false },
+        });
+      }
+
+      return prisma.paymentMethod.update({
+        where: { id: paymentMethodId },
+        data: {
+          type: input.type,
+          cardLast4: input.cardLast4,
+          cardBrand: input.cardBrand,
+          isDefault: input.isDefault,
+        },
+      });
+    },
+
+    deletePaymentMethod: async (
+      _parent: any,
+      { paymentMethodId }: any,
+      context: any,
+    ) => {
+      const { user, prisma } = context;
+
+
+      if (user.role !== "ADMIN") {
+        throw new GraphQLError(
+          "Only administrators can delete payment methods",
+        );
+      }
+
+      const paymentMethod = await prisma.paymentMethod.findUnique({
+        where: { id: paymentMethodId },
+      });
+
+      if (!paymentMethod) {
+        throw new GraphQLError("Payment method not found");
+      }
+
+      return prisma.paymentMethod.delete({
+        where: { id: paymentMethodId },
+      });
+    },
+  },
+};
+
 
